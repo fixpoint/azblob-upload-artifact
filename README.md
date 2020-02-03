@@ -12,19 +12,19 @@ See [action.yml](./action.yml)
 
 Basic:
 
-```
+```yaml
 steps:
-- uses: actions/checkout@v1
+  - uses: actions/checkout@v1
 
-- run: mkdir -p path/to/artifact
+  - run: mkdir -p path/to/artifact
 
-- run: echo hello > path/to/artifact/world.txt
+  - run: echo hello > path/to/artifact/world.txt
 
-- uses: fixpoint/azblob-upload-artifact@v1
-  with:
-    connection-string: ${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}
-    name: my-artifact
-    path: path/to/artifact
+  - uses: fixpoint/azblob-upload-artifact@v1
+    with:
+      connection-string: ${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}
+      name: my-artifact
+      path: path/to/artifact
 ```
 
 ## License
