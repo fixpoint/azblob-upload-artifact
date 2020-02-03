@@ -14,10 +14,15 @@ inputs:
   path:
     description: 'Directory containing files to upload'
     required: true
+  container:
+    description: 'Container name'
+    required: false
+    default: 'github-action-artifacts'
 runs:
   using: 'docker'
   image: 'Dockerfile'
   args:
+    - '${{ inputs.container }}'
     - '${{ inputs.name }}'
     - '${{ inputs.path }}'
   env:
