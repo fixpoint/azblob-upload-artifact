@@ -9,14 +9,20 @@ jobs:
     steps:
       - uses: actions/checkout@v1
 
-      - uses: ./
+      - run: |
+          mkdir -p path/to/artifact
+          echo hello > path/to/artifact/world.txt
+
+      - name: Basic usage
+        uses: ./
         with:
           connection-string: ${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}
           name: 'azblob-upload-artifact'
           path: 'README.md'
 
-      - uses: ./
+      - name: Upload with path
+        uses: ./
         with:
           connection-string: ${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}
           name: 'azblob-upload-artifact'
-          path: 'LICENSE'
+          path: 'path/to/artifact'
