@@ -9,13 +9,13 @@ jobs:
     steps:
       - uses: actions/checkout@v1
 
-      - uses: fixpoint/azblob-upload-artifact@${{ github.sha }}
+      - uses: fixpoint/azblob-upload-artifact@${{ env.GITHUB_SHA }}
         with:
           connection-string: ${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}
           name: 'azblob-upload-artifact'
           path: 'README.md'
 
-      - uses: fixpoint/azblob-upload-artifact@${{ github.sha }}
+      - uses: fixpoint/azblob-upload-artifact@${{ env.GITHUB_SHA }}
         with:
           connection-string: ${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}
           name: 'azblob-upload-artifact'
