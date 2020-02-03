@@ -19,7 +19,7 @@ steps:
 
   - run: echo hello > path/to/artifact/world.txt
 
-  - uses: fixpoint/azblob-upload-artifact@v1
+  - uses: fixpoint/azblob-upload-artifact@v2
     with:
       connection-string: ${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}
       name: my-artifact
@@ -29,7 +29,7 @@ steps:
 To upload artifacts only when the previous step of a job failed, use `if: failure()`:
 
 ```yaml
-- uses: fixpoint/azblob-upload-artifact@v1
+- uses: fixpoint/azblob-upload-artifact@v2
   if: failure()
   with:
     connection-string: ${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}
