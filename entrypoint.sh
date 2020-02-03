@@ -6,5 +6,10 @@ AZ_PATH=$1; shift
 # Create a specified container
 az storage container create -n "$AZ_CONTAINER"
 
-# Upload a specified file
-az storage blob upload-batch -d "$AZ_CONTAINER" -s "$AZ_PATH" --destination-path "$AZ_NAME"
+if [[ -d "$AZ_PATH" ]]; then
+  # Directory upload
+  az storage blob upload-batch -d "$AZ_CONTAINER" -s "$AZ_PATH" --destination-path "$AZ_NAME"
+else
+  # File upload
+  az storage blob upload -c "$AZ_CONTAINER" -n "$AZ_NAME/$AZ_PATH" -f "$AZ_PATH"
+fi
