@@ -1,0 +1,29 @@
+name: 'Upload a Build Artifact to Azure Blob Storage'
+description: 'Upload a build artifact that ca be used by subsequent workflow steps to Azure Blob Storage'
+author: 'fixpoint'
+branding:
+  icon: 'sunrise'
+  color: 'gray-dark'
+inputs:
+  name:
+    description: 'Artifact name'
+    required: true
+  path:
+    description: 'Directory containing files to upload'
+    required: true
+  connection-string:
+    description: 'Connection string'
+    required: true
+  container:
+    description: 'Container name'
+    required: false
+    default: 'github-action-artifacts'
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+  args:
+    - '${{ inputs.container }}'
+    - '${{ inputs.name }}'
+    - '${{ inputs.path }}'
+  env:
+    AZURE_STORAGE_CONNECTION_STRING: ${{ inputs.connection-string }}
