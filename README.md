@@ -4,8 +4,6 @@ This upload artifacts from your workflow to [Azure Blob Storage](https://azure.m
 
 See also [azblob-download-artifact](https://github.com/fixpoint/azblob-download-artifact).
 
-**UNDER DEVELOPMENT**
-
 ## Usage
 
 Get [Azure Storage connection strings](https://docs.microsoft.com/en-us/azure/storage/common/storage-configure-connection-string) and save it into secrets.
@@ -22,7 +20,7 @@ steps:
 
 - run: echo hello > path/to/artifact/world.txt
 
-- uses: fixpoint/azblob-upload-artifact@master
+- uses: fixpoint/azblob-upload-artifact@v1
   with:
     connection-string: ${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}
     name: my-artifact
