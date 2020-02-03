@@ -1,0 +1,22 @@
+name: Test
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v1
+
+      - uses: fixpoint/azblob-upload-artifact@master
+        with:
+          connection-string: ${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}
+          name: 'azblob-upload-artifact'
+          path: 'README.md'
+
+      - uses: fixpoint/azblob-upload-artifact@master
+        with:
+          connection-string: ${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}
+          name: 'azblob-upload-artifact'
+          path: 'LICENSE'
