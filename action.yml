@@ -5,24 +5,19 @@ branding:
   icon: 'sunrise'
   color: 'gray-dark'
 inputs:
+  connection-string:
+    description: 'Connection string'
+    required: true
   name:
     description: 'Artifact name'
     required: true
   path:
     description: 'Directory containing files to upload'
     required: true
-  connection-string:
-    description: 'Connection string'
-    required: true
-  container:
-    description: 'Container name'
-    required: false
-    default: 'github-action-artifacts'
 runs:
   using: 'docker'
   image: 'Dockerfile'
   args:
-    - '${{ inputs.container }}'
     - '${{ inputs.name }}'
     - '${{ inputs.path }}'
   env:

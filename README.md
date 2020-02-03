@@ -20,7 +20,7 @@ steps:
 
   - run: echo hello > path/to/artifact/world.txt
 
-  - uses: fixpoint/azblob-upload-artifact@v1
+  - uses: fixpoint/azblob-upload-artifact@master
     with:
       connection-string: ${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}
       name: my-artifact
