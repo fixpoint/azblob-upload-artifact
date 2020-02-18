@@ -7,7 +7,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+      - run: npm ci
+      - run: npm run build
 
       - run: |
           mkdir -p path/to/artifact1
@@ -36,9 +39,10 @@ jobs:
           name: 'azblob-upload-artifact3'
           path: 'path/to/artifact2'
 
-      - name: Upload (overwrite)
+      - name: Upload with path (directory, overwrite)
         uses: ./
         with:
           connection-string: ${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}
           name: 'azblob-upload-artifact3'
           path: 'path/to/artifact1'
+          cleanup: 'true'

@@ -18,12 +18,10 @@ inputs:
     description: 'Container name'
     required: false
     default: 'github-action-artifacts'
+  cleanup:
+    description: 'Remove all blobs under the target blob (use "true" to enable this option)'
+    required: false
+    default: 'false'
 runs:
-  using: 'docker'
-  image: 'Dockerfile'
-  args:
-    - '${{ inputs.container }}'
-    - '${{ inputs.name }}'
-    - '${{ inputs.path }}'
-  env:
-    AZURE_STORAGE_CONNECTION_STRING: ${{ inputs.connection-string }}
+  using: 'node12'
+  main: 'src/index.js'
