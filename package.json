@@ -1,0 +1,46 @@
+{
+  "name": "azblob-upload-artifact",
+  "version": "0.0.0",
+  "private": true,
+  "description": "",
+  "main": "src/index.js",
+  "scripts": {
+    "build": "tsc -p .",
+    "watch": "tsc -p . --watch --preverseWatchOutput",
+    "lint": "eslint --max-warnings 0 ./**/*.ts",
+    "lint:fix": "eslint --fix ./**/*.ts",
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fixpoint/azblob-upload-artifact.git"
+  },
+  "keywords": [
+    "github",
+    "action",
+    "azure",
+    "blob",
+    "artifact"
+  ],
+  "author": "Fixpoint, Inc.",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/fixpoint/azblob-upload-artifact/issues"
+  },
+  "homepage": "https://github.com/fixpoint/azblob-upload-artifact#readme",
+  "dependencies": {
+    "@actions/core": "^1.2.2",
+    "@actions/exec": "^1.0.3",
+    "@azure/storage-blob": "^12.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^13.7.1",
+    "@typescript-eslint/eslint-plugin": "^2.20.0",
+    "@typescript-eslint/parser": "^2.20.0",
+    "eslint": "^6.8.0",
+    "eslint-config-prettier": "^6.10.0",
+    "eslint-plugin-prettier": "^3.1.2",
+    "prettier": "^1.19.1",
+    "typescript": "^3.7.5"
+  }
+}
