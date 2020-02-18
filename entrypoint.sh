@@ -8,8 +8,8 @@ az storage container create -n "$AZ_CONTAINER"
 
 if [[ -d "$AZ_PATH" ]]; then
   # Directory upload
-  az storage blob upload-batch -d "$AZ_CONTAINER" -s "$AZ_PATH" --destination-path "$AZ_NAME/$AZ_PATH"
+  az storage blob upload-batch -d "$AZ_CONTAINER" -s "$AZ_PATH" --destination-path "$AZ_NAME"
 else
   # File upload
-  az storage blob upload -c "$AZ_CONTAINER" -n "$AZ_NAME/$AZ_PATH" -f "$AZ_PATH"
+  az storage blob upload -c "$AZ_CONTAINER" -n "$AZ_NAME/$(basename $AZ_PATH)" -f "$AZ_PATH"
 fi
