@@ -6,6 +6,9 @@ AZ_PATH=$1; shift
 # Create a specified container
 az storage container create -n "$AZ_CONTAINER"
 
+# Remove resources in the directory
+az storage blob delete-batch -s "$AZ_CONTAINER" --pattern "$AZ_NAME/*"
+
 if [[ -d "$AZ_PATH" ]]; then
   # Directory upload
   az storage blob upload-batch -d "$AZ_CONTAINER" -s "$AZ_PATH" --destination-path "$AZ_NAME"
