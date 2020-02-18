@@ -4,7 +4,14 @@ on: [push]
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os:
+          - ubuntu-latest
+          - macos-latest
+          - windows-latest
+
+    runs-on: ${{ matrix.os }}
 
     steps:
       - uses: actions/checkout@v2
@@ -12,7 +19,9 @@ jobs:
       - run: npm ci
       - run: npm run build
 
-      - run: |
+      - name: Prepare a directory structure
+        shell: bash
+        run: |
           mkdir -p path/to/artifact1
           mkdir -p path/to/artifact2
           echo hello > path/to/artifact1/hello.txt
@@ -22,27 +31,27 @@ jobs:
         uses: ./
         with:
           connection-string: ${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}
-          name: 'azblob-upload-artifact1'
+          name: '${{ matrix.os }}/azblob-upload-artifact1'
           path: 'README.md'
 
       - name: Upload with path (file)
         uses: ./
         with:
           connection-string: ${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}
-          name: 'azblob-upload-artifact2'
+          name: '${{ matrix.os }}/azblob-upload-artifact2'
           path: 'path/to/artifact1/hello.txt'
 
       - name: Upload with path (directory)
         uses: ./
         with:
           connection-string: ${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}
-          name: 'azblob-upload-artifact3'
+          name: '${{ matrix.os }}/azblob-upload-artifact3'
           path: 'path/to/artifact2'
 
       - name: Upload with path (directory, overwrite)
         uses: ./
         with:
           connection-string: ${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}
-          name: 'azblob-upload-artifact3'
+          name: '${{ matrix.os }}/azblob-upload-artifact3'
           path: 'path/to/artifact1'
           cleanup: 'true'
