@@ -19992,12 +19992,14 @@ async function upload(connectionString, name, path, container, cleanup) {
         await containerClient.create();
     }
     // Remove blobs under the 'name'
-    for await (const blob of containerClient.listBlobsFlat()) {
-        if (!blob.name.startsWith(name + '/')) {
-            continue;
+    if (cleanup) {
+        for await (const blob of containerClient.listBlobsFlat()) {
+            if (!blob.name.startsWith(name + '/')) {
+                continue;
+            }
+            const blockClient = await containerClient.getBlockBlobClient(blob.name);
+            await blockClient.delete();
         }
-        const blockClient = await containerClient.getBlockBlobClient(blob.name);
-        await blockClient.delete();
     }
     // Upload the file/directory
     const stat = await fs_1.promises.lstat(path);
