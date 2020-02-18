@@ -12,26 +12,33 @@ jobs:
       - run: |
           mkdir -p path/to/artifact1
           mkdir -p path/to/artifact2
-          echo hello > path/to/artifact1/world.txt
-          echo hello > path/to/artifact2/world.txt
+          echo hello > path/to/artifact1/hello.txt
+          echo world > path/to/artifact2/world.txt
 
       - name: Basic usage
         uses: ./
         with:
           connection-string: ${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}
-          name: 'azblob-upload-artifact'
+          name: 'azblob-upload-artifact1'
           path: 'README.md'
 
       - name: Upload with path (file)
         uses: ./
         with:
           connection-string: ${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}
-          name: 'azblob-upload-artifact'
-          path: 'path/to/artifact1/world.txt'
+          name: 'azblob-upload-artifact2'
+          path: 'path/to/artifact1/hello.txt'
 
       - name: Upload with path (directory)
         uses: ./
         with:
           connection-string: ${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}
-          name: 'azblob-upload-artifact'
+          name: 'azblob-upload-artifact3'
           path: 'path/to/artifact2'
+
+      - name: Upload (overwrite)
+        uses: ./
+        with:
+          connection-string: ${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}
+          name: 'azblob-upload-artifact3'
+          path: 'path/to/artifact1'
