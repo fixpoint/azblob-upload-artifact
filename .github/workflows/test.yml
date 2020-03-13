@@ -31,6 +31,7 @@ jobs:
         uses: ./
         with:
           connection-string: ${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}
+          container: 'azblob-upload-artifact'
           name: '${{ matrix.os }}/azblob-upload-artifact1'
           path: 'README.md'
 
@@ -38,6 +39,7 @@ jobs:
         uses: ./
         with:
           connection-string: ${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}
+          container: 'azblob-upload-artifact'
           name: '${{ matrix.os }}/azblob-upload-artifact2'
           path: 'path/to/artifact1/hello.txt'
 
@@ -45,6 +47,7 @@ jobs:
         uses: ./
         with:
           connection-string: ${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}
+          container: 'azblob-upload-artifact'
           name: '${{ matrix.os }}/azblob-upload-artifact3'
           path: 'path/to/artifact2'
 
@@ -52,6 +55,7 @@ jobs:
         uses: ./
         with:
           connection-string: ${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}
+          container: 'azblob-upload-artifact'
           name: '${{ matrix.os }}/azblob-upload-artifact3'
           path: 'path/to/artifact1'
           cleanup: 'true'

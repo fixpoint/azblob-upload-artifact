@@ -19978,16 +19978,17 @@ function serial(list, iterator, callback)
 
 Object.defineProperty(exports, "__esModule", { value: true });
 const tslib_1 = __webpack_require__(422);
+const mime = tslib_1.__importStar(__webpack_require__(779));
 const storage_blob_1 = __webpack_require__(9);
 const core = tslib_1.__importStar(__webpack_require__(470));
 const fs_1 = __webpack_require__(747);
 const util_1 = __webpack_require__(648);
 const path_1 = __webpack_require__(622);
 async function upload(connectionString, name, path, container, cleanup) {
-    const serviceClient = await storage_blob_1.BlobServiceClient.fromConnectionString(connectionString);
+    const serviceClient = storage_blob_1.BlobServiceClient.fromConnectionString(connectionString);
     // Create container if necessary
     core.info(`Creating a container "${container}" ...`);
-    const containerClient = await serviceClient.getContainerClient(container);
+    const containerClient = serviceClient.getContainerClient(container);
     if (!(await containerClient.exists())) {
         await containerClient.create();
     }
@@ -19997,25 +19998,35 @@ async function upload(connectionString, name, path, container, cleanup) {
             if (!blob.name.startsWith(name + '/')) {
                 continue;
             }
-            const blockClient = await containerClient.getBlockBlobClient(blob.name);
+            const blockClient = containerClient.getBlockBlobClient(blob.name);
             await blockClient.delete();
         }
     }
+    const uploadFileWithContentType = async (src, dst) => {
+        const mt = mime.lookup(src);
+        const blobHTTPHeaders = mt
+            ? {
+                blobContentType: mt,
+            }
+            : {};
+        const blockClient = containerClient.getBlockBlobClient(dst);
+        await blockClient.uploadFile(src, {
+            blobHTTPHeaders,
+        });
+    };
     // Upload the file/directory
     const stat = await fs_1.promises.lstat(path);
     if (stat.isDirectory()) {
         for (const src of await util_1.walk(path)) {
             const dst = [name, path_1.relative(path, src).replace(/\\/g, '/')].join('/');
             core.info(`Uploading ${src} to ${dst} ...`);
-            const blockClient = await containerClient.getBlockBlobClient(dst);
-            await blockClient.uploadFile(src);
+            await uploadFileWithContentType(src, dst);
         }
     }
     else {
         const dst = [name, path_1.basename(path)].join('/');
         core.info(`Uploading ${path} to ${dst} ...`);
-        const blockClient = await containerClient.getBlockBlobClient(dst);
-        await blockClient.uploadFile(path);
+        await uploadFileWithContentType(path, dst);
     }
 }
 exports.upload = upload;
