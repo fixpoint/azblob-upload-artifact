@@ -1,3 +1,4 @@
+import * as mime from 'mime-types';
 import { BlobServiceClient } from '@azure/storage-blob';
 import * as core from '@actions/core';
 import { promises as fs } from 'fs';
@@ -33,19 +34,30 @@ export async function upload(
     }
   }
 
+  const uploadFileWithContentType = async (src: string, dst: string) => {
+    const mt = mime.lookup(src);
+    const blobHTTPHeaders = mt
+      ? {
+          blobContentType: mt,
+        }
+      : {};
+    const blockClient = containerClient.getBlockBlobClient(dst);
+    await blockClient.uploadFile(src, {
+      blobHTTPHeaders,
+    });
+  };
+
   // Upload the file/directory
   const stat = await fs.lstat(path);
   if (stat.isDirectory()) {
     for (const src of await walk(path)) {
       const dst = [name, relative(path, src).replace(/\\/g, '/')].join('/');
       core.info(`Uploading ${src} to ${dst} ...`);
-      const blockClient = containerClient.getBlockBlobClient(dst);
-      await blockClient.uploadFile(src);
+      await uploadFileWithContentType(src, dst);
     }
   } else {
     const dst = [name, basename(path)].join('/');
     core.info(`Uploading ${path} to ${dst} ...`);
-    const blockClient = containerClient.getBlockBlobClient(dst);
-    await blockClient.uploadFile(path);
+    await uploadFileWithContentType(path, dst);
   }
 }
