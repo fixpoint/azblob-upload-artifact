@@ -11,13 +11,13 @@ export async function upload(
   container: string,
   cleanup: boolean,
 ) {
-  const serviceClient = await BlobServiceClient.fromConnectionString(
+  const serviceClient = BlobServiceClient.fromConnectionString(
     connectionString,
   );
 
   // Create container if necessary
   core.info(`Creating a container "${container}" ...`);
-  const containerClient = await serviceClient.getContainerClient(container);
+  const containerClient = serviceClient.getContainerClient(container);
   if (!(await containerClient.exists())) {
     await containerClient.create();
   }
@@ -28,7 +28,7 @@ export async function upload(
       if (!blob.name.startsWith(name + '/')) {
         continue;
       }
-      const blockClient = await containerClient.getBlockBlobClient(blob.name);
+      const blockClient = containerClient.getBlockBlobClient(blob.name);
       await blockClient.delete();
     }
   }
@@ -39,13 +39,13 @@ export async function upload(
     for (const src of await walk(path)) {
       const dst = [name, relative(path, src).replace(/\\/g, '/')].join('/');
       core.info(`Uploading ${src} to ${dst} ...`);
-      const blockClient = await containerClient.getBlockBlobClient(dst);
+      const blockClient = containerClient.getBlockBlobClient(dst);
       await blockClient.uploadFile(src);
     }
   } else {
     const dst = [name, basename(path)].join('/');
     core.info(`Uploading ${path} to ${dst} ...`);
-    const blockClient = await containerClient.getBlockBlobClient(dst);
+    const blockClient = containerClient.getBlockBlobClient(dst);
     await blockClient.uploadFile(path);
   }
 }
