@@ -4,6 +4,7 @@ import * as core from '@actions/core';
 import { promises as fs } from 'fs';
 import { walk } from './util';
 import { basename, relative } from 'path';
+import * as glob from 'glob';
 
 export async function upload(
   connectionString: string,
@@ -48,16 +49,19 @@ export async function upload(
   };
 
   // Upload the file/directory
-  const stat = await fs.lstat(path);
-  if (stat.isDirectory()) {
-    for (const src of await walk(path)) {
-      const dst = [name, relative(path, src).replace(/\\/g, '/')].join('/');
-      core.info(`Uploading ${src} to ${dst} ...`);
-      await uploadFileWithContentType(src, dst);
+  const paths = glob.sync(path);
+  for (const path of paths) {
+    const stat = await fs.lstat(path);
+    if (stat.isDirectory()) {
+      for (const src of await walk(path)) {
+        const dst = [name, relative(path, src).replace(/\\/g, '/')].join('/');
+        core.info(`Uploading ${src} to ${dst} ...`);
+        await uploadFileWithContentType(src, dst);
+      }
+    } else {
+      const dst = [name, basename(path)].join('/');
+      core.info(`Uploading ${path} to ${dst} ...`);
+      await uploadFileWithContentType(path, dst);
     }
-  } else {
-    const dst = [name, basename(path)].join('/');
-    core.info(`Uploading ${path} to ${dst} ...`);
-    await uploadFileWithContentType(path, dst);
   }
 }
