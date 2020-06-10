@@ -33,9 +33,11 @@
     "@actions/core": "^1.2.2",
     "@actions/exec": "^1.0.3",
     "@azure/storage-blob": "^12.1.0",
+    "glob": "^7.1.6",
     "mime-types": "^2.1.26"
   },
   "devDependencies": {
+    "@types/glob": "^7.1.2",
     "@types/mime-types": "^2.1.0",
     "@types/node": "^13.7.1",
     "@typescript-eslint/eslint-plugin": "^2.20.0",

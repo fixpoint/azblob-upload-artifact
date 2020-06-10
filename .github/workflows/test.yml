@@ -26,6 +26,10 @@ jobs:
           mkdir -p path/to/artifact2
           echo hello > path/to/artifact1/hello.txt
           echo world > path/to/artifact2/world.txt
+          echo hello > path/to/artifact1/hello.tsv
+          echo world > path/to/artifact2/world.tsv
+          echo hello > path/to/artifact1/hello.csv
+          echo world > path/to/artifact2/world.csv
 
       - name: Basic usage
         uses: ./
@@ -59,3 +63,11 @@ jobs:
           name: '${{ matrix.os }}/azblob-upload-artifact3'
           path: 'path/to/artifact1'
           cleanup: 'true'
+
+      - name: Upload with path (wildcards)
+        uses: ./
+        with:
+          connection-string: ${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}
+          container: 'azblob-upload-artifact'
+          name: '${{ matrix.os }}/azblob-upload-artifact4'
+          path: 'path/**/*.+(txt|tsv)'
