@@ -21,7 +21,7 @@ inputs:
   cleanup:
     description: 'Remove all blobs under the target blob (use "true" to enable this option)'
     required: false
-    default: 'false'
+    default: 'true'
   extra_args:
     description: "Extra arguments that can be passed to `az storage blob upload-batch|sync`. Useful for passing flags like `--pattern` or `--destination-path`"
     required: false
