@@ -22,6 +22,12 @@ inputs:
     description: 'Remove all blobs under the target blob (use "true" to enable this option)'
     required: false
     default: 'false'
+  extra_args:
+    description: "Extra arguments that can be passed to `az storage blob upload-batch|sync`. Useful for passing flags like `--pattern` or `--destination-path`"
+    required: false
+  sync:
+    description: "Use `az storage blob sync` to synchronize blobs recursively"
+    required: false
 runs:
   using: 'node12'
   main: 'dist/index.js'
