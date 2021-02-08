@@ -30,7 +30,7 @@
   },
   "homepage": "https://github.com/fixpoint/azblob-upload-artifact#readme",
   "dependencies": {
-    "@actions/core": "^1.2.2",
+    "@actions/core": "^1.2.6",
     "@actions/exec": "^1.0.3",
     "@azure/storage-blob": "^12.1.0",
     "glob": "^7.1.6",
