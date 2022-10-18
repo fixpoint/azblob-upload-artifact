@@ -30,23 +30,23 @@
   },
   "homepage": "https://github.com/fixpoint/azblob-upload-artifact#readme",
   "dependencies": {
-    "@actions/core": "^1.2.6",
-    "@actions/exec": "^1.0.3",
-    "@azure/storage-blob": "^12.1.0",
-    "glob": "^7.1.6",
-    "mime-types": "^2.1.26"
+    "@actions/core": "^1.10.0",
+    "@actions/exec": "^1.1.1",
+    "@azure/storage-blob": "^12.12.0",
+    "glob": "^8.0.3",
+    "mime-types": "^2.1.35"
   },
   "devDependencies": {
-    "@types/glob": "^7.1.2",
-    "@types/mime-types": "^2.1.0",
-    "@types/node": "^13.7.1",
-    "@typescript-eslint/eslint-plugin": "^2.20.0",
-    "@typescript-eslint/parser": "^2.20.0",
-    "@zeit/ncc": "^0.21.1",
-    "eslint": "^6.8.0",
-    "eslint-config-prettier": "^6.10.0",
-    "eslint-plugin-prettier": "^3.1.2",
-    "prettier": "^1.19.1",
-    "typescript": "^3.7.5"
+    "@types/glob": "^8.0.0",
+    "@types/mime-types": "^2.1.1",
+    "@types/node": "^18.11.0",
+    "@typescript-eslint/eslint-plugin": "^5.40.1",
+    "@typescript-eslint/parser": "^5.40.1",
+    "@vercel/ncc": "^0.34.0",
+    "eslint": "^8.25.0",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-plugin-prettier": "^4.2.1",
+    "prettier": "^2.7.1",
+    "typescript": "^4.8.4"
   }
 }
