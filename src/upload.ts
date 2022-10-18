@@ -13,9 +13,8 @@ export async function upload(
   container: string,
   cleanup: boolean,
 ) {
-  const serviceClient = BlobServiceClient.fromConnectionString(
-    connectionString,
-  );
+  const serviceClient =
+    BlobServiceClient.fromConnectionString(connectionString);
 
   // Create container if necessary
   core.info(`Creating a container "${container}" ...`);

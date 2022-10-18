@@ -15,7 +15,7 @@ async function main() {
   );
 }
 
-main().catch(e => {
+main().catch((e) => {
   core.debug(e.stack);
   core.error(e.message);
   core.setFailed(e.message);
