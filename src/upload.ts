@@ -48,7 +48,7 @@ export async function upload(
   };
 
   // Upload the file/directory
-  const paths = glob.sync(path);
+  const paths = glob.sync(path.replace(/\\/g, '/'));
   for (const path of paths) {
     const stat = await fs.lstat(path);
     if (stat.isDirectory()) {
