@@ -1,5 +1,5 @@
 name: 'Upload a Build Artifact to Azure Blob Storage'
-description: 'Upload a build artifact that ca be used by subsequent workflow steps to Azure Blob Storage'
+description: 'Upload a build artifact that can be used by subsequent workflow steps to Azure Blob Storage'
 author: 'fixpoint'
 branding:
   icon: 'sunrise'
