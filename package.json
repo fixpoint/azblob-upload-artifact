@@ -37,7 +37,6 @@
     "mime-types": "^2.1.35"
   },
   "devDependencies": {
-    "@types/glob": "^8.1.0",
     "@types/mime-types": "^2.1.4",
     "@types/node": "^22.7.9",
     "@typescript-eslint/eslint-plugin": "^8.11.0",
