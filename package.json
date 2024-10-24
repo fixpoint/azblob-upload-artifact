@@ -30,23 +30,22 @@
   },
   "homepage": "https://github.com/fixpoint/azblob-upload-artifact#readme",
   "dependencies": {
-    "@actions/core": "^1.10.0",
+    "@actions/core": "^1.11.1",
     "@actions/exec": "^1.1.1",
-    "@azure/storage-blob": "^12.12.0",
-    "glob": "^8.0.3",
+    "@azure/storage-blob": "^12.25.0",
+    "glob": "^11.0.0",
     "mime-types": "^2.1.35"
   },
   "devDependencies": {
-    "@types/glob": "^8.0.0",
-    "@types/mime-types": "^2.1.1",
-    "@types/node": "^18.11.0",
-    "@typescript-eslint/eslint-plugin": "^5.40.1",
-    "@typescript-eslint/parser": "^5.40.1",
-    "@vercel/ncc": "^0.34.0",
-    "eslint": "^8.25.0",
-    "eslint-config-prettier": "^8.5.0",
-    "eslint-plugin-prettier": "^4.2.1",
-    "prettier": "^2.7.1",
-    "typescript": "^4.8.4"
+    "@types/mime-types": "^2.1.4",
+    "@types/node": "^22.7.9",
+    "@typescript-eslint/eslint-plugin": "^8.11.0",
+    "@typescript-eslint/parser": "^8.11.0",
+    "@vercel/ncc": "^0.38.2",
+    "eslint": "^9.13.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-prettier": "^5.2.1",
+    "prettier": "^3.3.3",
+    "typescript": "^5.6.3"
   }
 }
