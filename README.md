@@ -13,7 +13,7 @@ Get [Azure Storage connection strings](https://docs.microsoft.com/en-us/azure/st
 
 ```yaml
 steps:
-  - uses: actions/checkout@v4
+  - uses: actions/checkout@v5
 
   - run: mkdir -p path/to/artifact
 
