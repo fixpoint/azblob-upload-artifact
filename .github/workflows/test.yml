@@ -74,6 +74,17 @@ jobs:
           name: '${{ matrix.os }}/azblob-upload-artifact3'
           path: 'path/to/artifact2'
 
+      # A blob whose name only starts with the same string must survive cleanup.
+      # The container is shared, so a wider cleanup would delete other artifacts.
+      - name: Put a blob next to the one to be cleaned up
+        if: runner.os == 'Linux'
+        env:
+          AZURE_STORAGE_CONNECTION_STRING: ${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}
+        run: |
+          az storage blob upload --only-show-errors --overwrite \
+            -c azblob-upload-artifact -f README.md \
+            -n '${{ matrix.os }}/azblob-upload-artifact3x/keep.md' > /dev/null
+
       - name: Upload with path (directory, overwrite)
         uses: ./
         with:
@@ -82,6 +93,27 @@ jobs:
           name: '${{ matrix.os }}/azblob-upload-artifact3'
           path: 'path/to/artifact1'
           cleanup: 'true'
+
+      - name: Check that cleanup removed only the blobs under the name
+        if: runner.os == 'Linux'
+        env:
+          AZURE_STORAGE_CONNECTION_STRING: ${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}
+        run: |
+          list() {
+            az storage blob list --only-show-errors -c azblob-upload-artifact \
+              --prefix "$1" --query '[].name' -o tsv | sort | tr '\n' ' '
+          }
+          actual=$(list '${{ matrix.os }}/azblob-upload-artifact3/')
+          expected='${{ matrix.os }}/azblob-upload-artifact3/hello.csv ${{ matrix.os }}/azblob-upload-artifact3/hello.tsv ${{ matrix.os }}/azblob-upload-artifact3/hello.txt '
+          if [ "$actual" != "$expected" ]; then
+            echo "::error::Unexpected blobs after cleanup: $actual"
+            exit 1
+          fi
+          neighbor=$(list '${{ matrix.os }}/azblob-upload-artifact3x/')
+          if [ "$neighbor" != '${{ matrix.os }}/azblob-upload-artifact3x/keep.md ' ]; then
+            echo "::error::Cleanup removed a blob outside the name: $neighbor"
+            exit 1
+          fi
 
       - name: Upload with path (wildcards)
         uses: ./
