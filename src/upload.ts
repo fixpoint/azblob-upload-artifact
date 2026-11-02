@@ -25,8 +25,12 @@ export async function upload(
 
   // Remove blobs under the 'name'
   if (cleanup) {
-    for await (const blob of containerClient.listBlobsFlat()) {
-      if (!blob.name.startsWith(name + '/')) {
+    // Without a prefix the service lists every blob in the container,
+    // including those of other artifacts sharing it. The startsWith check
+    // keeps the deletion scoped even if the service matched more widely.
+    const prefix = name + '/';
+    for await (const blob of containerClient.listBlobsFlat({ prefix })) {
+      if (!blob.name.startsWith(prefix)) {
         continue;
       }
       const blockClient = containerClient.getBlockBlobClient(blob.name);
