@@ -2,9 +2,24 @@ import * as mime from 'mime-types';
 import { BlobServiceClient } from '@azure/storage-blob';
 import * as core from '@actions/core';
 import { promises as fs } from 'fs';
-import { walk } from './util';
+import { forEachConcurrently, walk } from './util';
 import { basename, relative } from 'path';
 import * as glob from 'glob';
+
+const CONCURRENCY = 16;
+
+// The SDK uploads a file over 256 MiB in blocks, 5 at a time by default.
+const SDK_BLOCK_CONCURRENCY = 5;
+
+// Blocks uploaded at a time per file, so that the requests in flight stay
+// within CONCURRENCY. A single file keeps the SDK default, as before.
+export function blockConcurrency(fileCount: number): number {
+  const filesInFlight = Math.min(CONCURRENCY, fileCount);
+  return Math.min(
+    SDK_BLOCK_CONCURRENCY,
+    Math.max(1, Math.floor(CONCURRENCY / filesInFlight)),
+  );
+}
 
 // Maps each destination blob name to the local file uploaded there.
 // When two sources map to the same blob the later one wins, which is what
@@ -58,14 +73,23 @@ export async function upload(
     // including those of other artifacts sharing it. The startsWith check
     // keeps the deletion scoped even if the service matched more widely.
     const prefix = name + '/';
+    const stale: string[] = [];
     for await (const blob of containerClient.listBlobsFlat({ prefix })) {
-      if (!blob.name.startsWith(prefix)) {
-        continue;
+      if (blob.name.startsWith(prefix)) {
+        stale.push(blob.name);
       }
-      const blockClient = containerClient.getBlockBlobClient(blob.name);
-      await blockClient.delete();
     }
+    core.info(`Removing ${stale.length} blobs under "${prefix}" ...`);
+    await forEachConcurrently(
+      stale,
+      CONCURRENCY,
+      (blobName) => `Failed to remove ${blobName}`,
+      (blobName) => containerClient.getBlockBlobClient(blobName).delete(),
+    );
   }
+
+  const files = await collectFiles(name, path);
+  const concurrency = blockConcurrency(files.size);
 
   const uploadFileWithContentType = async (src: string, dst: string) => {
     const mt = mime.lookup(src);
@@ -77,12 +101,17 @@ export async function upload(
     const blockClient = containerClient.getBlockBlobClient(dst);
     await blockClient.uploadFile(src, {
       blobHTTPHeaders,
+      concurrency,
     });
   };
 
-  const files = await collectFiles(name, path);
-  for (const [dst, src] of files) {
-    core.info(`Uploading ${src} to ${dst} ...`);
-    await uploadFileWithContentType(src, dst);
-  }
+  await forEachConcurrently(
+    [...files],
+    CONCURRENCY,
+    ([dst, src]) => `Failed to upload ${src} to ${dst}`,
+    ([dst, src]) => {
+      core.info(`Uploading ${src} to ${dst} ...`);
+      return uploadFileWithContentType(src, dst);
+    },
+  );
 }

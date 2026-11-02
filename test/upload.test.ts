@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { after, before, describe, it } from 'node:test';
 import * as glob from 'glob';
-import { collectFiles } from '../src/upload';
+import { blockConcurrency, collectFiles } from '../src/upload';
 
 describe('collectFiles', () => {
   const cwd = process.cwd();
@@ -45,5 +45,19 @@ describe('collectFiles', () => {
     const files = await collectFiles('n', 'dup/*');
     assert.deepEqual([...files.keys()], ['n/x.txt']);
     assert.equal(files.get('n/x.txt'), last);
+  });
+});
+
+describe('blockConcurrency', () => {
+  it('keeps the SDK default of 5 blocks for a single file', () => {
+    assert.equal(blockConcurrency(1), 5);
+  });
+
+  it('keeps the requests in flight within 16', () => {
+    for (let files = 1; files <= 40; files++) {
+      const inFlight = Math.min(16, files) * blockConcurrency(files);
+      assert.ok(inFlight <= 16, `${files} files: ${inFlight} requests`);
+      assert.ok(blockConcurrency(files) >= 1);
+    }
   });
 });
