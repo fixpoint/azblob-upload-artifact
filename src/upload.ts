@@ -6,6 +6,35 @@ import { walk } from './util';
 import { basename, relative } from 'path';
 import * as glob from 'glob';
 
+// Maps each destination blob name to the local file uploaded there.
+// When two sources map to the same blob the later one wins, which is what
+// uploading them one after another used to end with.
+export async function collectFiles(
+  name: string,
+  path: string,
+): Promise<Map<string, string>> {
+  const files = new Map<string, string>();
+  const add = (dst: string, src: string) => {
+    const previous = files.get(dst);
+    if (previous !== undefined) {
+      core.info(`Using ${src} instead of ${previous} for ${dst}`);
+    }
+    files.set(dst, src);
+  };
+  const paths = glob.sync(path.replace(/\\/g, '/'));
+  for (const path of paths) {
+    const stat = await fs.lstat(path);
+    if (stat.isDirectory()) {
+      for (const src of await walk(path)) {
+        add([name, relative(path, src).replace(/\\/g, '/')].join('/'), src);
+      }
+    } else {
+      add([name, basename(path)].join('/'), path);
+    }
+  }
+  return files;
+}
+
 export async function upload(
   connectionString: string,
   name: string,
@@ -51,20 +80,9 @@ export async function upload(
     });
   };
 
-  // Upload the file/directory
-  const paths = glob.sync(path.replace(/\\/g, '/'));
-  for (const path of paths) {
-    const stat = await fs.lstat(path);
-    if (stat.isDirectory()) {
-      for (const src of await walk(path)) {
-        const dst = [name, relative(path, src).replace(/\\/g, '/')].join('/');
-        core.info(`Uploading ${src} to ${dst} ...`);
-        await uploadFileWithContentType(src, dst);
-      }
-    } else {
-      const dst = [name, basename(path)].join('/');
-      core.info(`Uploading ${path} to ${dst} ...`);
-      await uploadFileWithContentType(path, dst);
-    }
+  const files = await collectFiles(name, path);
+  for (const [dst, src] of files) {
+    core.info(`Uploading ${src} to ${dst} ...`);
+    await uploadFileWithContentType(src, dst);
   }
 }
