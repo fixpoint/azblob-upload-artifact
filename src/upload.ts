@@ -84,7 +84,8 @@ export async function upload(
       stale,
       CONCURRENCY,
       (blobName) => `Failed to remove ${blobName}`,
-      (blobName) => containerClient.getBlockBlobClient(blobName).delete(),
+      (blobName) =>
+        containerClient.getBlockBlobClient(blobName).deleteIfExists(),
     );
   }
 
