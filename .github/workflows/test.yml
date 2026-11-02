@@ -13,7 +13,7 @@ jobs:
           node-version: 24
       - run: npm ci
       - run: npm run lint
-      - run: npm run build
+      - run: npm test
       - run: |
           npm run compile
           git diff --exit-code
@@ -36,7 +36,7 @@ jobs:
         with:
           node-version: 24
       - run: npm ci
-      - run: npm run build
+      - run: npm test
 
       - name: Prepare a directory structure
         shell: bash
