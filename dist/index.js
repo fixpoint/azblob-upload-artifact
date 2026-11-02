@@ -55579,6 +55579,8 @@ function loadConfigFromInputs() {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.blockConcurrency = blockConcurrency;
+exports.collectFiles = collectFiles;
 exports.upload = upload;
 const tslib_1 = __nccwpck_require__(1860);
 const mime = tslib_1.__importStar(__nccwpck_require__(4096));
@@ -55588,6 +55590,41 @@ const fs_1 = __nccwpck_require__(9896);
 const util_1 = __nccwpck_require__(8793);
 const path_1 = __nccwpck_require__(6928);
 const glob = tslib_1.__importStar(__nccwpck_require__(1363));
+const CONCURRENCY = 16;
+// The SDK uploads a file over 256 MiB in blocks, 5 at a time by default.
+const SDK_BLOCK_CONCURRENCY = 5;
+// Blocks uploaded at a time per file, so that the requests in flight stay
+// within CONCURRENCY. A single file keeps the SDK default, as before.
+function blockConcurrency(fileCount) {
+    const filesInFlight = Math.min(CONCURRENCY, fileCount);
+    return Math.min(SDK_BLOCK_CONCURRENCY, Math.max(1, Math.floor(CONCURRENCY / filesInFlight)));
+}
+// Maps each destination blob name to the local file uploaded there.
+// When two sources map to the same blob the later one wins, which is what
+// uploading them one after another used to end with.
+async function collectFiles(name, path) {
+    const files = new Map();
+    const add = (dst, src) => {
+        const previous = files.get(dst);
+        if (previous !== undefined) {
+            core.info(`Using ${src} instead of ${previous} for ${dst}`);
+        }
+        files.set(dst, src);
+    };
+    const paths = glob.sync(path.replace(/\\/g, '/'));
+    for (const path of paths) {
+        const stat = await fs_1.promises.lstat(path);
+        if (stat.isDirectory()) {
+            for (const src of await (0, util_1.walk)(path)) {
+                add([name, (0, path_1.relative)(path, src).replace(/\\/g, '/')].join('/'), src);
+            }
+        }
+        else {
+            add([name, (0, path_1.basename)(path)].join('/'), path);
+        }
+    }
+    return files;
+}
 async function upload(connectionString, name, path, container, cleanup) {
     const serviceClient = storage_blob_1.BlobServiceClient.fromConnectionString(connectionString);
     // Create container if necessary
@@ -55598,14 +55635,21 @@ async function upload(connectionString, name, path, container, cleanup) {
     }
     // Remove blobs under the 'name'
     if (cleanup) {
-        for await (const blob of containerClient.listBlobsFlat()) {
-            if (!blob.name.startsWith(name + '/')) {
-                continue;
+        // Without a prefix the service lists every blob in the container,
+        // including those of other artifacts sharing it. The startsWith check
+        // keeps the deletion scoped even if the service matched more widely.
+        const prefix = name + '/';
+        const stale = [];
+        for await (const blob of containerClient.listBlobsFlat({ prefix })) {
+            if (blob.name.startsWith(prefix)) {
+                stale.push(blob.name);
             }
-            const blockClient = containerClient.getBlockBlobClient(blob.name);
-            await blockClient.delete();
         }
+        core.info(`Removing ${stale.length} blobs under "${prefix}" ...`);
+        await (0, util_1.forEachConcurrently)(stale, CONCURRENCY, (blobName) => `Failed to remove ${blobName}`, (blobName) => containerClient.getBlockBlobClient(blobName).deleteIfExists());
     }
+    const files = await collectFiles(name, path);
+    const concurrency = blockConcurrency(files.size);
     const uploadFileWithContentType = async (src, dst) => {
         const mt = mime.lookup(src);
         const blobHTTPHeaders = mt
@@ -55616,25 +55660,13 @@ async function upload(connectionString, name, path, container, cleanup) {
         const blockClient = containerClient.getBlockBlobClient(dst);
         await blockClient.uploadFile(src, {
             blobHTTPHeaders,
+            concurrency,
         });
     };
-    // Upload the file/directory
-    const paths = glob.sync(path.replace(/\\/g, '/'));
-    for (const path of paths) {
-        const stat = await fs_1.promises.lstat(path);
-        if (stat.isDirectory()) {
-            for (const src of await (0, util_1.walk)(path)) {
-                const dst = [name, (0, path_1.relative)(path, src).replace(/\\/g, '/')].join('/');
-                core.info(`Uploading ${src} to ${dst} ...`);
-                await uploadFileWithContentType(src, dst);
-            }
-        }
-        else {
-            const dst = [name, (0, path_1.basename)(path)].join('/');
-            core.info(`Uploading ${path} to ${dst} ...`);
-            await uploadFileWithContentType(path, dst);
-        }
-    }
+    await (0, util_1.forEachConcurrently)([...files], CONCURRENCY, ([dst, src]) => `Failed to upload ${src} to ${dst}`, ([dst, src]) => {
+        core.info(`Uploading ${src} to ${dst} ...`);
+        return uploadFileWithContentType(src, dst);
+    });
 }
 //# sourceMappingURL=upload.js.map
 
@@ -55647,6 +55679,7 @@ async function upload(connectionString, name, path, container, cleanup) {
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.walk = walk;
+exports.forEachConcurrently = forEachConcurrently;
 const fs_1 = __nccwpck_require__(9896);
 const path_1 = __nccwpck_require__(6928);
 async function walk(dir) {
@@ -55665,6 +55698,36 @@ async function walk(dir) {
         return fileList;
     }
     return await _walk(dir, []);
+}
+// Runs fn over items with at most `limit` calls in flight.
+// After the first failure no new item is started. Calls already in flight
+// are awaited, so nothing is still writing when this returns, and every
+// failure is reported with `describe(item)`, not only the first.
+async function forEachConcurrently(items, limit, describe, fn) {
+    if (!Number.isInteger(limit) || limit < 1) {
+        throw new Error(`limit must be a positive integer: ${limit}`);
+    }
+    let next = 0;
+    const errors = [];
+    const worker = async () => {
+        while (errors.length === 0 && next < items.length) {
+            const item = items[next++];
+            try {
+                await fn(item);
+            }
+            catch (e) {
+                errors.push(`${describe(item)}: ${e instanceof Error ? e.message : e}`);
+            }
+        }
+    };
+    const workers = Array.from({ length: Math.min(limit, items.length) }, worker);
+    await Promise.all(workers);
+    if (errors.length === 1) {
+        throw new Error(errors[0]);
+    }
+    if (errors.length > 1) {
+        throw new Error(`${errors.length} operations failed:\n${errors.join('\n')}`);
+    }
 }
 //# sourceMappingURL=util.js.map
 
