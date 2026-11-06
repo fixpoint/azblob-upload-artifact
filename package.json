@@ -10,7 +10,8 @@
     "watch": "tsc -p . --watch --preverseWatchOutput",
     "lint": "eslint --max-warnings 0 ./**/*.ts",
     "lint:fix": "eslint --fix ./**/*.ts",
-    "test": "jest"
+    "pretest": "npm run build",
+    "test": "node --test test/*.test.js"
   },
   "repository": {
     "type": "git",
